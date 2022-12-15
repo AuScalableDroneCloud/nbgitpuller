@@ -141,6 +141,7 @@ class UIHandler(IPythonHandler):
         repo = self.get_argument('repo')
         branch = self.get_argument('branch', None)
         depth = self.get_argument('depth', None)
+        requirements = self.get_argument('requirements', None)
         urlPath = self.get_argument('urlpath', None) or \
                   self.get_argument('urlPath', None)
         subPath = self.get_argument('subpath', None) or \
@@ -163,7 +164,7 @@ class UIHandler(IPythonHandler):
 
         self.write(
             jinja_env.get_template('status.html').render(
-                repo=repo, branch=branch, path=path, depth=depth, targetpath=targetpath, version=__version__,
+                repo=repo, branch=branch, path=path, depth=depth, requirements=requirements, targetpath=targetpath, version=__version__,
                 **self.template_namespace
             )
         )

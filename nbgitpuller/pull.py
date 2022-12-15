@@ -157,6 +157,9 @@ class GitPuller(Configurable):
         yield from execute_cmd(clone_args)
         logging.info('Repo {} initialized'.format(self.repo_dir))
 
+        # Install requirements
+        yield from self.install_requirements()
+
     def reset_deleted_files(self):
         """
         Runs the equivalent of git checkout -- <file> for each file that was
