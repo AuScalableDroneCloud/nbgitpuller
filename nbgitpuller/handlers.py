@@ -59,6 +59,7 @@ class SyncHandler(IPythonHandler):
             depth = self.get_argument('depth', None)
             if depth:
                 depth = int(depth)
+            requirements = self.get_argument('requirements', None)
             # The default working directory is the directory from which Jupyter
             # server is launched, which is not the same as the root notebook
             # directory assuming either --notebook-dir= is used from the
@@ -76,7 +77,7 @@ class SyncHandler(IPythonHandler):
             self.set_header('content-type', 'text/event-stream')
             self.set_header('cache-control', 'no-cache')
 
-            gp = GitPuller(repo, repo_dir, branch=branch, depth=depth, parent=self.settings['nbapp'])
+            gp = GitPuller(repo, repo_dir, branch=branch, depth=depth, requirements=requirements, parent=self.settings['nbapp'])
 
             q = Queue()
 

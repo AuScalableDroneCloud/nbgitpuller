@@ -1,10 +1,11 @@
 import os
+import sys
 import subprocess
 import logging
 import time
 import argparse
 import datetime
-from traitlets import Integer, default
+from traitlets import Integer, Unicode, default
 from traitlets.config import Configurable
 from functools import partial
 
@@ -66,6 +67,8 @@ class GitPuller(Configurable):
         where the GitPuller class hadn't been loaded already."""
         return int(os.environ.get('NBGITPULLER_DEPTH', 1))
 
+    requirements = Unicode(u'', config=True, help="""Repo relative path to a requirements.txt or environment.yml file to install.""")
+
     def __init__(self, git_url, repo_dir, **kwargs):
         assert git_url
 
@@ -80,6 +83,7 @@ class GitPuller(Configurable):
         self.repo_dir = repo_dir
         newargs = {k: v for k, v in kwargs.items() if v is not None}
         super(GitPuller, self).__init__(**newargs)
+
 
     def branch_exists(self, branch):
         """
@@ -330,6 +334,16 @@ class GitPuller(Configurable):
         yield from self.ensure_lock()
         yield from self.merge()
 
+        # Install requirements
+        yield from self.install_requirements()
+
+    def install_requirements(self):
+        #Install requirements.txt or environment.yml if path provided
+        if os.path.exists(os.path.join(self.repo_dir, self.requirements)):
+            if self.requirements[-4:].lower() == '.txt':
+                yield from execute_cmd([sys.executable, "-m", "pip", "install", "-r", self.requirements], cwd=self.repo_dir)
+            elif self.requirements[-4:-2].lower() == '.y':
+                yield from execute_cmd(["conda", "env", "create", "-f", self.requirements], cwd=self.repo_dir)
 
 def main():
     """
@@ -343,12 +357,14 @@ def main():
     parser.add_argument('git_url', help='Url of the repo to sync')
     parser.add_argument('branch_name', default=None, help='Branch of repo to sync', nargs='?')
     parser.add_argument('repo_dir', default='.', help='Path to clone repo under', nargs='?')
+    parser.add_argument('requirements', default=None, help='Repo relative path to a requirements.txt or environment.yml to install', nargs='?')
     args = parser.parse_args()
 
     for line in GitPuller(
         args.git_url,
         args.repo_dir,
-        branch=args.branch_name if args.branch_name else None
+        branch=args.branch_name if args.branch_name else None,
+        requirements=args.requirements if args.requirements else None
     ).pull():
         print(line)
 
