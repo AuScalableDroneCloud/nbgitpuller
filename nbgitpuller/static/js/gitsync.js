@@ -1,11 +1,12 @@
 export class GitSync {
-    constructor(baseUrl, repo, branch, depth, targetpath, path) {
+    constructor(baseUrl, repo, branch, depth, requirements, targetpath, path) {
         // Class that talks to the API backend & emits events as appropriate
         this.baseUrl = baseUrl;
         this.repo = repo;
         this.branch = branch;
         this.depth = depth;
         this.targetpath = targetpath;
+        this.requirements = requirements;
         this.redirectUrl = baseUrl + path;
 
         this.callbacks = {};
@@ -38,6 +39,9 @@ export class GitSync {
         }
         if (typeof this.branch !== 'undefined' && this.branch != undefined) {
             syncUrlParams.append('branch', this.branch);
+        }
+        if (typeof this.requirements !== 'undefined' && this.requirements != undefined) {
+            syncUrlParams.append('requirements', this.requirements);
         }
         const syncUrl = this.baseUrl + 'git-pull/api?' + syncUrlParams.toString();
 
